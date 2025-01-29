@@ -2,18 +2,20 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { transporter, mailOptions } from "../../lib/nodemailer"
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Configurar headers CORS
+  // Configurar headers CORS primero
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001')
-  res.setHeader('Access-Control-Allow-Methods', 'POST')
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
-  // Manejar solicitud OPTIONS para preflight
+  // Manejar preflight inmediatamente
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
   }
 
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" })
+  // Ahora verificar el método POST
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', ['POST'])
+    return res.status(405).json({ error: `Método ${req.method} no permitido` })
   }
 
   const { name, email, message } = req.body
