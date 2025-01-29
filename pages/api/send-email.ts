@@ -16,19 +16,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: "Method not allowed" })
   }
 
-  const { to, subject, text, html } = req.body
+  const { name, email, message } = req.body
 
-  if (!to || !subject || (!text && !html)) {
+  if (!name || !email || !message) {
     return res.status(400).json({ error: "Missing required fields" })
   }
 
   try {
     await transporter.sendMail({
       ...mailOptions,
-      to,
-      subject,
-      text,
-      html,
+      subject: `New message from ${name} (${email})`,
+      text: message,
+      html: `
+        <div>
+          <h3>New contact form submission</h3>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Message:</strong></p>
+          <p>${message}</p>
+        </div>
+      `,
     })
 
     // Agregar headers CORS también en la respuesta exitosa
