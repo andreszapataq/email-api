@@ -19,6 +19,10 @@ yarn-error.log*
 # env files
 .env*
 
+# misc
+.DS_Store
+*.pem
+
 # vercel
 .vercel
 

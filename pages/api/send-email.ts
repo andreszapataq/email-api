@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { transporter, mailOptions } from "../../lib/nodemailer"
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Lista blanca de orígenes permitidos
+  // Configuración CORS consolidada
   const allowedOrigins = [
     'http://localhost:3001',
     'https://andreszapata.me'
@@ -13,53 +13,50 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
   res.setHeader('Vary', 'Origin')
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+     .setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+     .setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Manejar preflight inmediatamente
   if (req.method === 'OPTIONS') {
-    return res.status(200).end()
+    return res.status(200).end();
   }
 
-  // Ahora verificar el método POST
   if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST'])
-    return res.status(405).json({ error: `Método ${req.method} no permitido` })
+    return res.status(405).setHeader('Allow', ['POST'])
+             .json({ error: `Método ${req.method} no permitido` });
   }
 
-  const { name, email, message } = req.body
-
-  if (!name || !email || !message) {
-    return res.status(400).json({ error: "Missing required fields" })
+  // Validación mejorada
+  const { name, email, message } = req.body;
+  if (!name?.trim() || !email?.trim() || !message?.trim()) {
+    return res.status(400).json({ error: "Todos los campos son requeridos" });
   }
 
   try {
-    await transporter.sendMail({
+    // Objeto de correo simplificado
+    const mailData = {
       ...mailOptions,
-      from: `"Contact Form" <${process.env.EMAIL_SERVER_USER}>`,
+      from: `Formulario de Contacto <${process.env.EMAIL_SERVER_USER}>`,
       to: process.env.CONTACT_EMAIL,
-      subject: `New message from ${name} (${email})`,
+      subject: `Nuevo mensaje de ${name} (${email})`,
       text: message,
-      html: `
-        <div>
-          <h3>New contact form submission</h3>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Message:</strong></p>
-          <p>${message}</p>
-        </div>
-      `,
-    })
+      html: `<div>
+        <h3>Nuevo mensaje del formulario</h3>
+        <p><b>Nombre:</b> ${name}</p>
+        <p><b>Email:</b> ${email}</p>
+        <p><b>Mensaje:</b></p>
+        <p>${message.replace(/\n/g, '<br>')}</p>
+      </div>`
+    };
 
-    // Agregar headers CORS también en la respuesta exitosa
-    res.status(200).json({ message: "Email sent successfully" })
+    await transporter.sendMail(mailData);
+    return res.status(200).json({ message: "Correo enviado exitosamente" });
+    
   } catch (error) {
-    console.error("Error sending email:", error)
-    // Agregar headers CORS también en la respuesta de error
-    res.status(500).json({ 
-      error: "Error sending email",
-      details: error instanceof Error ? error.message : "Unknown error"
-    })
+    console.error("Error enviando correo:", error);
+    return res.status(500).json({ 
+      error: "Error al enviar el correo",
+      details: error instanceof Error ? error.message : "Error desconocido"
+    });
   }
 }
 
