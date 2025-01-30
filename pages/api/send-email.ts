@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const mailData = {
       ...mailOptions,
-      from: `Contacto desde Portafolio <${process.env.EMAIL_SERVER_USER}>`,
+      from: `Contacto desde andreszapata.me <${process.env.EMAIL_SERVER_USER}>`,
       to: process.env.CONTACT_EMAIL,
       subject: `Nuevo mensaje de ${name} (${email})`,
       text: message,
