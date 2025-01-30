@@ -54,7 +54,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (error) {
     console.error("Error sending email:", error)
     // Agregar headers CORS también en la respuesta de error
-    res.status(500).json({ error: "Error sending email" })
+    res.status(500).json({ 
+      error: "Error sending email",
+      details: error instanceof Error ? error.message : "Unknown error"
+    })
   }
 }
 
