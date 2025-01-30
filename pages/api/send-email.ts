@@ -36,6 +36,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await transporter.sendMail({
       ...mailOptions,
+      from: `"Contact Form" <${process.env.EMAIL_SERVER_USER}>`,
+      to: process.env.CONTACT_EMAIL,
       subject: `New message from ${name} (${email})`,
       text: message,
       html: `
