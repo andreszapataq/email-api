@@ -2,8 +2,17 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { transporter, mailOptions } from "../../lib/nodemailer"
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Configurar headers CORS primero
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001')
+  // Lista blanca de orígenes permitidos
+  const allowedOrigins = [
+    'http://localhost:3001',
+    'https://andreszapata.me'
+  ];
+  
+  const origin = req.headers.origin || '';
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Vary', 'Origin')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
