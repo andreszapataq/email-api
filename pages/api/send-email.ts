@@ -25,17 +25,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
              .json({ error: `Método ${req.method} no permitido` });
   }
 
-  // Validación mejorada
   const { name, email, message } = req.body;
   if (!name?.trim() || !email?.trim() || !message?.trim()) {
     return res.status(400).json({ error: "Todos los campos son requeridos" });
   }
 
   try {
-    // Objeto de correo simplificado
     const mailData = {
       ...mailOptions,
-      from: `Formulario de Contacto <${process.env.EMAIL_SERVER_USER}>`,
+      from: `Contacto desde andreszapata.me <${process.env.EMAIL_SERVER_USER}>`,
       to: process.env.CONTACT_EMAIL,
       subject: `Nuevo mensaje de ${name} (${email})`,
       text: message,
